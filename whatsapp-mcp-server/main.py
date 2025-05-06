@@ -1,3 +1,4 @@
+import argparse
 from typing import List, Dict, Any, Optional
 from mcp.server.fastmcp import FastMCP
 from whatsapp import (
@@ -247,5 +248,25 @@ def download_media(message_id: str, chat_jid: str) -> Dict[str, Any]:
         }
 
 if __name__ == "__main__":
-    # Initialize and run the server
-    mcp.run(transport='stdio')
+    parser = argparse.ArgumentParser(description="WhatsApp MCP Server")
+    parser.add_argument(
+        "--transport",
+        type=str,
+        default="stdio",
+        choices=["stdio", "http"], # Add 'http' as a valid choice
+        help="Transport protocol for the MCP server (stdio or http)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000, # A common default port for HTTP servers
+        help="Port for the HTTP transport (only used if transport is 'http')",
+    )
+    args = parser.parse_args()
+
+    print(f"Starting MCP server with transport: {args.transport}") # Optional: Add logging
+    if args.transport == 'http':
+        print(f"Listening on port: {args.port}") # Optional: Add logging
+
+    # Initialize and run the server with the selected transport and port
+    mcp.run(transport=args.transport, port=args.port if args.transport == 'http' else None)
