@@ -1,4 +1,5 @@
 import argparse
+import uvicorn
 from typing import List, Dict, Any, Optional
 from mcp.server.fastmcp import FastMCP
 from whatsapp import (
@@ -253,7 +254,7 @@ if __name__ == "__main__":
         "--transport",
         type=str,
         default="stdio",
-        choices=["stdio", "http"], # Add 'http' as a valid choice
+        choices=["stdio", "http"],
         help="Transport protocol for the MCP server (stdio or http)",
     )
     parser.add_argument(
@@ -262,11 +263,22 @@ if __name__ == "__main__":
         default=8000, # A common default port for HTTP servers
         help="Port for the HTTP transport (only used if transport is 'http')",
     )
+    parser.add_argument(
+        "--host", # Add argument for host to bind to
+        type=str,
+        default="0.0.0.0", # Listen on all interfaces in a container
+        help="Host to bind the HTTP server to (only used if transport is 'http')",
+    )
     args = parser.parse_args()
 
-    print(f"Starting MCP server with transport: {args.transport}") # Optional: Add logging
+    print(f"Starting MCP server with transport: {args.transport}")
     if args.transport == 'http':
-        print(f"Listening on port: {args.port}") # Optional: Add logging
-
-    # Initialize and run the server with the selected transport and port
-    mcp.run(transport=args.transport, port=args.port if args.transport == 'http' else None)
+        print(f"Binding to {args.host}:{args.port}")
+        # When transport is http, the FastMCP instance has an 'app' attribute
+        # which is the ASGI application (FastAPI app)
+        app = mcp.app
+        # Run the app using uvicorn
+        uvicorn.run(app, host=args.host, port=args.port)
+    else:
+        # Original stdio behavior
+        mcp.run(transport='stdio')
