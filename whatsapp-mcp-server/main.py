@@ -274,11 +274,7 @@ if __name__ == "__main__":
     print(f"Starting MCP server with transport: {args.transport}")
     if args.transport == 'http':
         print(f"Binding to {args.host}:{args.port}")
-        # When transport is http, the FastMCP instance has an 'app' attribute
-        # which is the ASGI application (FastAPI app)
-        app = mcp.app
-        # Run the app using uvicorn
-        uvicorn.run(app, host=args.host, port=args.port)
+        uvicorn.run(mcp, host=args.host, port=args.port)
     else:
         # Original stdio behavior
         mcp.run(transport='stdio')
